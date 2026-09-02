@@ -1,1 +1,66 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>ระบบข้อสอบออนไลน์</title>
+  <style>
+    body { font-family:"Segoe UI",sans-serif; background:#f9f9f9; padding:20px; }
+    h2 { text-align:center; }
+    .question { margin-bottom:15px; }
+    textarea { width:70%; min-height:60px; }
+    button { margin-top:10px; padding:8px 14px; }
+    .result { margin-top:20px; }
+    .correct { color:green; font-weight:bold; }
+    .wrong { color:red; font-weight:bold; }
+  </style>
+</head>
+<body>
+  <h2>📝 แบบทดสอบ</h2>
+  <div id="quiz"></div>
+  <button onclick="submitQuiz()">ส่งคำตอบ</button>
+  <button onclick="loadQuestions()">ทำใหม่</button>
+  <div id="result"></div>
 
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbw6ev4DPXOMNNoXK1p8ngevL0vIPrrjEt7kZ6pbU45YPvx4ChNwjECh58X0SpznjC3F/exec";
+
+    let questions = [];
+
+    async function loadQuestions() {
+      const res = await fetch(API_URL+"?api=questions");
+      questions = await res.json();
+      const quizDiv = document.getElementById("quiz");
+      quizDiv.innerHTML = "";
+      questions.forEach((q,i) => {
+        quizDiv.innerHTML += `
+          <div class="question">
+            <p><b>${q.question}</b></p>
+            <textarea id="ans${i}"></textarea>
+          </div>
+        `;
+      });
+      document.getElementById("result").innerHTML = "";
+    }
+
+    function submitQuiz() {
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = "<p style='color:blue'>⏳ กำลังตรวจคำตอบ...</p>";
+
+      let output = "<h3>เฉลย</h3>";
+      questions.forEach((q,i) => {
+        const userAns = document.getElementById("ans"+i).value.trim();
+        const correct = q.answer.trim();
+        if (userAns.toLowerCase() === correct.toLowerCase()) {
+          output += `<p><b>${q.question}</b><br><span class="correct">✅ ถูกต้อง</span></p>`;
+        } else {
+          output += `<p><b>${q.question}</b><br><span class="wrong">❌ ผิด</span><br>คำตอบคุณ: ${userAns}<br>เฉลย: ${correct}</p>`;
+        }
+      });
+      resultDiv.innerHTML = output;
+      document.getElementById("quiz").innerHTML = "";
+    }
+
+    loadQuestions();
+  </script>
+</body>
+</html>
